@@ -13,7 +13,7 @@ genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
 def generate_description_with_Gemini(image_data: bytes):
     try:
         img = Image.open(BytesIO(image_data))
-        model = genai.GenerativeModel('gemini-2.5-pro')
+        model = genai.GenerativeModel('gemini-2.5-flash')
         prompt = """
 Hãy kiêm tra bức ảnh nếu là ảnh da liễu thì tiếp tục mô tả còn nếu không phải thì trả về "Không phải ảnh da liễu".
 Hãy quan sát kỹ bức ảnh da bên dưới và mô tả lại một cách trung lập, chính xác, chỉ dựa trên những gì có thể nhìn thấy bằng mắt thường trong ảnh, bằng tiếng Việt.
@@ -36,10 +36,14 @@ Lưu ý cực kỳ quan trọng:
 - Trả về kết quả dưới dạng một đoạn văn y khoa mô tả, rõ ràng, trung lập, duy nhất.
 
 Chỉ trả về đoạn mô tả, không thêm bất kỳ thông tin nào khác.
-"""
+"""     
         response = model.generate_content([prompt, img])
-        caption = response.text.replace("\n", " ").strip()
-        return caption
+        try:
+            caption = response.text.replace("\n", " ").strip()
+            return caption
+        except Exception as e:
+            logging.error(f"Lỗi khi xử lý phản hồi Gemini: {e}")
+            return response
     except Exception as e:
         logging.error(f"Lỗi khi tạo caption với Gemini: {e}")
         return None

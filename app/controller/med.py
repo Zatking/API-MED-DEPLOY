@@ -244,7 +244,7 @@ async def start_diagnois(image: UploadFile = File(...), user_id: Optional[str] =
         step_start = time.time()
         description = generate_description_with_Gemini(image_data)
         print(f"[TIME] Sinh mô tả ảnh: {time.time() - step_start:.3f} giây")
-        if description in ["Không phải ảnh da liễu", "Không phải ảnh da liễu."]:
+        if "Không phải ảnh da liễu" in description:
             raise HTTPException(status_code=400, detail="Ảnh không phải là ảnh da liễu")
 
         # --- B4: Tiền xử lý ảnh ---
@@ -280,8 +280,8 @@ async def start_diagnois(image: UploadFile = File(...), user_id: Optional[str] =
         label_scores_percent_test = {label: (score / total_similarity_test) * 100 for label, score in label_scores_test.items()}
         sorted_labels_test = sorted(label_scores_percent_test.items(), key=lambda x: x[1], reverse=True)
         print(f"[TIME] Xử lý kết quả ban đầu: {time.time() - step_start:.3f} giây")
-
-        if sorted_labels_test[0][0] == "non-infectious diseases":
+        top_label, top_percent = sorted_labels_test[0]
+        if top_label == "non-infectious diseases" and top_percent < 99:
             raise HTTPException(status_code=400, detail="Không thể chẩn đoán bệnh này vì hiện tại bệnh thuộc vào nhóm bệnh chưa hỗ trợ")
 
         # --- B7: Tìm kiếm full image ---
